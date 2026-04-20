@@ -103,5 +103,22 @@
   }
   body {
     @apply bg-background text-foreground;
+    overflow-x: hidden;
   }
+}
+
+/* Mobile safe area support */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .mobile-bottom-bar {
+    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+  }
+}
+
+/* Smooth kanban scrolling on mobile */
+.kanban-scroll {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.kanban-scroll::-webkit-scrollbar {
+  display: none;
 }

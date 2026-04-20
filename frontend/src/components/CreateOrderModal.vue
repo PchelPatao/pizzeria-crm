@@ -33,10 +33,14 @@ const submitOrder = async () => {
 </script>
 
 <template>
-  <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" @click.self="$emit('close')">
-    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-200 dark:border-slate-700">
+  <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 sm:p-4" @click.self="$emit('close')">
+    <div class="bg-white dark:bg-slate-800 rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-md overflow-hidden border border-slate-200 dark:border-slate-700 max-h-[92dvh] flex flex-col">
+      <!-- Drag handle (mobile only) -->
+      <div class="sm:hidden flex justify-center pt-3 pb-1">
+        <div class="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></div>
+      </div>
       <!-- Modal header -->
-      <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex justify-between items-center">
+      <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-5 sm:px-6 py-3.5 sm:py-4 flex justify-between items-center">
         <div>
           <h2 class="text-lg font-bold text-white">Новый заказ</h2>
           <p class="text-blue-200 text-xs mt-0.5">Заполните данные клиента и состав заказа</p>
@@ -46,7 +50,7 @@ const submitOrder = async () => {
         </button>
       </div>
 
-      <div class="p-6">
+      <div class="p-5 sm:p-6 overflow-y-auto flex-1">
         <div v-if="error" class="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 p-3 rounded-lg text-sm mb-4 border border-red-200 dark:border-red-800">
           {{ error }}
         </div>
@@ -100,18 +104,18 @@ const submitOrder = async () => {
             />
           </div>
 
-          <div class="pt-2 flex justify-end gap-3 border-t border-slate-100 dark:border-slate-700">
+          <div class="pt-3 flex flex-col-reverse sm:flex-row sm:justify-end gap-2 sm:gap-3 border-t border-slate-100 dark:border-slate-700">
             <button
               type="button"
               @click="$emit('close')"
-              class="px-5 py-2.5 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+              class="w-full sm:w-auto px-5 py-2.5 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-600 sm:border-transparent"
             >
               Отмена
             </button>
             <button
               type="submit"
               :disabled="isSubmitting"
-              class="px-5 py-2.5 rounded-lg text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white transition-colors shadow-sm disabled:opacity-50 flex items-center gap-2"
+              class="w-full sm:w-auto px-5 py-2.5 rounded-xl text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white transition-colors shadow-sm disabled:opacity-50 flex items-center justify-center gap-2"
             >
               <svg v-if="isSubmitting" class="animate-spin" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
               {{ isSubmitting ? 'Сохранение...' : 'Создать заказ' }}
