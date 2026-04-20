@@ -77,13 +77,13 @@ const formattedDate = computed(() => {
     <div class="flex justify-between items-start mb-3">
       <span class="text-xs font-bold text-slate-400 dark:text-slate-500">#{{ order.id }}</span>
       <div class="flex items-center gap-1.5">
-        <!-- Кнопка редактирования -->
+        <!-- Кнопка редактирования: всегда на мобилках, при hover на десктопе -->
         <button
           @click.stop="emit('edit', order)"
-          class="opacity-0 group-hover:opacity-100 p-1 rounded-md text-slate-400 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/30 transition-all duration-150"
+          class="sm:opacity-0 sm:group-hover:opacity-100 p-1 rounded-md text-slate-400 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/30 active:bg-violet-100 transition-all duration-150"
           title="Редактировать заказ"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
           </svg>
@@ -118,6 +118,17 @@ const formattedDate = computed(() => {
 
     <!-- Действия -->
     <div class="flex gap-1.5">
+      <!-- Кнопка редактирования в строке действий (только мобилки, большая зона касания) -->
+      <button
+        @click.stop="emit('edit', order)"
+        class="sm:hidden py-1.5 px-3 bg-violet-50 dark:bg-violet-900/20 hover:bg-violet-100 dark:hover:bg-violet-900/40 active:bg-violet-200 text-violet-600 dark:text-violet-400 rounded-lg text-xs font-medium transition-colors border border-violet-200 dark:border-violet-800 flex items-center gap-1"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+        </svg>
+        Изменить
+      </button>
       <button
         v-if="prevStatus"
         @click="moveStatus(prevStatus)"
