@@ -50,6 +50,38 @@ const todayOrders = computed(() => {
   const today = new Date().toDateString()
   return store.orders.filter(o => new Date(o.created_at).toDateString() === today).length
 })
+
+// ── Drag & Drop ──────────────────────────────────────────────────
+const draggingOrderId = ref<number | null>(null)
+const dragOverStatus = ref<string | null>(null)
+
+function onDragStart(orderId: number) {
+  draggingOrderId.value = orderId
+}
+
+function onDragEnd() {
+  draggingOrderId.value = null
+  dragOverStatus.value = null
+}
+
+function onDragOver(e: DragEvent, status: string) {
+  e.preventDefault()
+  dragOverStatus.value = status
+}
+
+function onDragLeave() {
+  dragOverStatus.value = null
+}
+
+async function onDrop(status: string) {
+  if (draggingOrderId.value === null) return
+  const order = store.orders.find(o => o.id === draggingOrderId.value)
+  if (order && order.status !== status) {
+    await store.updateOrderStatus(draggingOrderId.value, status)
+  }
+  draggingOrderId.value = null
+  dragOverStatus.value = null
+}
 </script>
 
 <template>
@@ -133,8 +165,16 @@ const todayOrders = computed(() => {
           <div
             v-for="status in statuses"
             :key="status"
-            class="bg-white dark:bg-slate-900 rounded-xl border-t-4 border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex-shrink-0 w-72 sm:w-auto snap-start"
-            :class="statusConfig[status].color"
+            class="rounded-xl border-t-4 border shadow-sm overflow-hidden flex-shrink-0 w-72 sm:w-auto snap-start transition-all duration-200"
+            :class="[
+              statusConfig[status].color,
+              dragOverStatus === status
+                ? 'bg-blue-50 dark:bg-blue-950/40 border-blue-300 dark:border-blue-700 scale-[1.01] shadow-md ring-2 ring-blue-400/40'
+                : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'
+            ]"
+            @dragover="onDragOver($event, status)"
+            @dragleave="onDragLeave"
+            @drop="onDrop(status)"
           >
             <!-- Column Header -->
             <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
@@ -148,7 +188,10 @@ const todayOrders = computed(() => {
             </div>
 
             <!-- Cards -->
-            <div class="p-3 space-y-2.5 min-h-[340px] sm:min-h-[480px]">
+            <div
+              class="p-3 space-y-2.5 min-h-[340px] sm:min-h-[480px]"
+              :class="{ 'ring-inset ring-2 ring-blue-400/20 rounded-b-xl': dragOverStatus === status }"
+            >
               <div v-if="store.loading" class="flex items-center justify-center py-12">
                 <svg class="animate-spin text-slate-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
               </div>
@@ -158,15 +201,37 @@ const todayOrders = computed(() => {
                   :key="order.id"
                   :order="order"
                   :allStatuses="statuses"
+                  :isDragging="draggingOrderId === order.id"
+                  @drag-start="onDragStart"
+                  @drag-end="onDragEnd"
                 />
+                <!-- Drop hint when column is empty and a card is being dragged -->
                 <div
                   v-if="store.orders.filter(o => o.status === status).length === 0"
-                  class="flex flex-col items-center justify-center py-10 text-center"
+                  class="flex flex-col items-center justify-center py-10 text-center transition-all duration-200"
+                  :class="dragOverStatus === status ? 'opacity-100' : 'opacity-100'"
                 >
-                  <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-slate-400"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
+                  <div
+                    class="w-10 h-10 rounded-full flex items-center justify-center mb-2 transition-all duration-200"
+                    :class="dragOverStatus === status ? 'bg-blue-100 dark:bg-blue-900/40' : 'bg-slate-100 dark:bg-slate-800'"
+                  >
+                    <svg
+                      v-if="dragOverStatus === status && draggingOrderId !== null"
+                      xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                      fill="none" stroke="currentColor" stroke-width="2" class="text-blue-500"
+                    ><path d="M12 5v14m-7-7h14"/></svg>
+                    <svg
+                      v-else
+                      xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                      fill="none" stroke="currentColor" stroke-width="1.5" class="text-slate-400"
+                    ><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
                   </div>
-                  <p class="text-xs text-slate-400 dark:text-slate-600">Нет заказов</p>
+                  <p
+                    class="text-xs transition-colors duration-200"
+                    :class="dragOverStatus === status && draggingOrderId !== null ? 'text-blue-500 dark:text-blue-400 font-medium' : 'text-slate-400 dark:text-slate-600'"
+                  >
+                    {{ dragOverStatus === status && draggingOrderId !== null ? 'Перетащить сюда' : 'Нет заказов' }}
+                  </p>
                 </div>
               </template>
             </div>

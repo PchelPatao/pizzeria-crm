@@ -4,8 +4,14 @@ import { useOrderStore, type Order } from '../store'
 
 const props = defineProps<{
   order: Order,
-  allStatuses: string[]
+  allStatuses: string[],
+  isDragging?: boolean
 }>()
+
+const emit = defineEmits<{
+  (e: 'drag-start', id: number): void
+  (e: 'drag-end'): void
+}>()  
 
 const store = useOrderStore()
 
@@ -43,7 +49,13 @@ const formattedDate = computed(() => {
 </script>
 
 <template>
-  <div class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group">
+  <div
+    draggable="true"
+    @dragstart="emit('drag-start', order.id)"
+    @dragend="emit('drag-end')"
+    class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group cursor-grab active:cursor-grabbing select-none"
+    :class="{ 'opacity-40 scale-95 rotate-1 shadow-lg ring-2 ring-blue-400/30': isDragging }"
+  >
     <!-- Header -->
     <div class="flex justify-between items-start mb-3">
       <span class="text-xs font-bold text-slate-400 dark:text-slate-500">#{{ order.id }}</span>
