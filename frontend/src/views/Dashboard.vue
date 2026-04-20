@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue'
-import { useOrderStore } from '../store'
+import { useOrderStore, type Order } from '../store'
 import OrderCard from '../components/OrderCard.vue'
-import CreateOrderModal from '../components/CreateOrderModal.vue'
+import OrderModal from '../components/OrderModal.vue'
 import { useAuthStore } from '../store/auth'
 
 const store = useOrderStore()
@@ -13,7 +13,23 @@ onMounted(() => {
 })
 
 const statuses = ['New', 'Preparing', 'Ready', 'Delivered']
-const isCreateModalOpen = ref(false)
+const isModalOpen = ref(false)
+const editingOrder = ref<Order | null>(null)
+
+function openCreate() {
+  editingOrder.value = null
+  isModalOpen.value = true
+}
+
+function openEdit(order: Order) {
+  editingOrder.value = order
+  isModalOpen.value = true
+}
+
+function closeModal() {
+  isModalOpen.value = false
+  editingOrder.value = null
+}
 
 const statusConfig: Record<string, { label: string; color: string; dot: string; badge: string }> = {
   'New': {
@@ -108,7 +124,7 @@ async function onDrop(status: string) {
           </button>
           <!-- New order: hidden on mobile (shown in bottom bar) -->
           <button
-            @click="isCreateModalOpen = true"
+            @click="openCreate()"
             class="hidden sm:flex bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors shadow-sm items-center gap-1.5"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14m-7-7h14"/></svg>
@@ -204,6 +220,7 @@ async function onDrop(status: string) {
                   :isDragging="draggingOrderId === order.id"
                   @drag-start="onDragStart"
                   @drag-end="onDragEnd"
+                  @edit="openEdit"
                 />
                 <!-- Drop hint when column is empty and a card is being dragged -->
                 <div
@@ -243,7 +260,7 @@ async function onDrop(status: string) {
     <!-- Mobile Bottom Action Bar -->
     <div class="sm:hidden fixed bottom-0 left-0 right-0 z-20 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-4 py-3 flex gap-3 shadow-lg mobile-bottom-bar">
       <button
-        @click="isCreateModalOpen = true"
+        @click="openCreate()"
         class="flex-1 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white py-2.5 rounded-xl font-semibold text-sm transition-colors shadow-sm flex items-center justify-center gap-2"
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14m-7-7h14"/></svg>
@@ -251,9 +268,10 @@ async function onDrop(status: string) {
       </button>
     </div>
 
-    <CreateOrderModal
-      v-if="isCreateModalOpen"
-      @close="isCreateModalOpen = false"
+    <OrderModal
+      v-if="isModalOpen"
+      :order="editingOrder"
+      @close="closeModal"
     />
   </div>
 </template>
